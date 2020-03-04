@@ -1,7 +1,6 @@
 function getImages() {
    return fetch(
-     // `https://api.unsplash.com/photos/random/?client_id=${process.env.REACT_APP_UNSPLASH_CLIENT_ID}`
-     `https://api.unsplash.com/photos/random/?client_id=c1abfd586c80415c3860ececcdb7971179a16825f47900e5cc10ac76ad15aa2c`
+     `https://api.unsplash.com/photos/random/?client_id=${process.env.REACT_APP_UNSPLASH_CLIENT_ID}`
    )
      .then(response => {
        if (response.ok) {

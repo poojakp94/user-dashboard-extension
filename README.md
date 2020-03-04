@@ -12,12 +12,6 @@ cd user-dashboard-extension/
 
 npm install
 ```
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ### `Using locally for Chrome`
 All you need to do is to run `npm run build` to put everything required into `build` folder, than launch `chrome://extensions/` in Google Chrome.

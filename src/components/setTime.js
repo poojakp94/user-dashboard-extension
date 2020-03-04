@@ -1,16 +1,20 @@
 import React from "react";
-import { convert24To12 } from "../utils/index.js";
+import strftime from "strftime";
 
-const Time = ({ currentTime }) => (
-  <div
-    style={{
-      fontSize: "80px",
-      color: "white",
-      fontWeight: "bolder"
-    }}
-  >
-    {convert24To12(`${currentTime.getHours()}:${currentTime.getMinutes()}`)}
-  </div>
-);
+const Time = ({ currentTime, is24Hour }) => {
+  return (
+    <div
+      style={{
+        fontSize: "80px",
+        color: "white",
+        fontWeight: "bolder"
+      }}
+    >
+      {is24Hour
+        ? strftime("%H:%M %p", currentTime)
+        : strftime("%I:%M %p", currentTime)}
+    </div>
+  );
+};
 
 export default Time;

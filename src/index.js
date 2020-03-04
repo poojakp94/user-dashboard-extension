@@ -1,97 +1,48 @@
+/*global chrome*/
 import React, { useState, useEffect } from "react";
-import ReactDOM from 'react-dom';
-import './index.css';
-import Button from './components/Button'
-import Time from './components/setTime';
-import UserName from './components/userName';
-import Weather from './components/weather';
-import defaultImageSource from './static/anime-desktop-wallpaper.jpg';
+import ReactDOM from "react-dom";
+import "./index.css";
+import Button from "./components/Button";
+import Time from "./components/setTime";
+import UserName from "./components/userName";
+import defaultImageSource from "./media/defaultImg.jpg";
+import SettingsBox from "./components/settings";
 
 const App = () => {
   const [currentImg, setImg] = useState(defaultImageSource);
-  const [currentTime, setTime] = useState(new Date());
+  const [currentTime, updateTime] = useState(new Date());
   const [isShowingSettings, setSettingsVisibility] = useState(false);
-
-  const SettingsBoxInvisivle = () => {
-    return (
-      <div
-        style={{
-          position: "absolute",
-          bottom: "0",
-          left: "0"
-        }}
-      ></div>
-    );
+  const [isEditingName, setEditingName] = useState(
+    !localStorage.getItem("name")
+  );
+  if (localStorage.getItem("is24Hour") === null) {
+    localStorage.setItem("is24Hour", false);
   }
-  const SettingsBoxVisible = () => {
-    return (
-      <div
-        style={{
-          backgroundColor: "rgb(0, 0, 0, 0.6)",
-          padding: "0.5rem",
-          borderRadius: "0.5rem",
-          height: "190px",
-          width: '150px',
-          position: 'absolute',
-          bottom: '30px',
-          left:'25px',
-        }}
-      >
-        <Button
-          name="change name"
-          style={{ width: "150px", display: "block" }}
-        />
-        <Button name="24 Hour" style={{ width: "150px", display: "block" }} />
-        <Button
-          name="change Image"
-          style={{ width: "150px", display: "block" }}
-        />
-      </div>
-    );
-  }
+  const [is24Hour, setTimeFormat] = useState(
+    localStorage.getItem("is24Hour") === "true"
+  );
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setTime(new Date());
+      updateTime(new Date());
     }, 600);
 
-    const intervalIdOfImg = setInterval(() => {
-      fetch(
-        `https://api.unsplash.com/photos/random/?client_id=${process.env.REACT_APP_UNSPLASH_CLIENT_ID}`
-      )
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error(
-            `Oops! request failed with status code ${response.status}`
-          );
-        })
-        .then(bodyData => fetch(bodyData.urls.regular))
-        .then(response => {
-          if (response.ok) {
-            return response.blob();
-          }
-          throw new Error(
-            `Oops! request failed with status code ${response.status}`
-          );
-        })
-        .then(blob => {
-          const staticImgUrl = URL.createObjectURL(blob);
-          const previousImageObjectUrl = currentImg;
-          setImg(staticImgUrl);
-          URL.revokeObjectURL(previousImageObjectUrl);
-        })
-        .catch(error => {
-          console.log(error);
+    function logStorageChange(changes) {
+      if (changes.hasOwnProperty("blob")) {
+        chrome.storage.local.get(["blob"], function(result) {
+          setImg(result.blob);
         });
-    }, 120000);
+      }
+    }
+    chrome.storage.onChanged.addListener(logStorageChange);
+
+    chrome.storage.local.get(["blob"], function(result) {
+      setImg(result.blob);
+    });
+
     return () => {
       clearInterval(intervalId);
-      clearInterval(intervalIdOfImg);
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -102,6 +53,11 @@ const App = () => {
         transitionProperty: `background`,
         transitionDuration: "1s",
         position: "relative"
+      }}
+      onClick={() => {
+        if (isShowingSettings) {
+          setSettingsVisibility(false);
+        }
       }}
     >
       <div
@@ -115,10 +71,14 @@ const App = () => {
           height: "200px"
         }}
       >
-        <Time currentTime={currentTime} />
-        <UserName currentTime={currentTime} />
+        <Time currentTime={currentTime} is24Hour={is24Hour} />
+        <UserName
+          currentTime={currentTime}
+          isEditingName={isEditingName}
+          setEditingName={setEditingName}
+        />
       </div>
-      <Weather />
+
       <Button
         name="✎"
         style={{
@@ -127,19 +87,22 @@ const App = () => {
           left: "5px",
           bottom: "5px",
           width: "50px",
-          color: 'black',
-        
-    
+          color: "black"
         }}
-        onFocus={() => {
+        onClick={() => {
           setSettingsVisibility(true);
         }}
-        onBlur={() => {
+      />
+      <SettingsBox
+        open={isShowingSettings}
+        setEditingName={setEditingName}
+        is24Hour={is24Hour}
+        setTimeFormat={setTimeFormat}
+        onClick={() => {
           setSettingsVisibility(false);
         }}
       />
-      {isShowingSettings ? SettingsBoxVisible() : SettingsBoxInvisivle()}
     </div>
   );
 };
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById("root"));
